@@ -16,13 +16,23 @@ if face_cascade.empty():
     exit()
 
 num_test = 0
+scale_factor = 0.3
+x1, x2, y1, y2 = 700, 1300, 900, 1700
+if scale_factor!= 1:
+    x1, x2, y1, y2 = int(x1*scale_factor), int(x2*scale_factor), int(y1*scale_factor), int(y2*scale_factor)
+
 while True:
     num_test += 1
     if num_test > 20: break
     ret, frame = capture.read()
     if ret is False:
+        print("Failed to open the video")
         break
-    roi = frame[800: 1200, 1000: 1600]
+    if scale_factor != 1:
+        dim = (int(frame.shape[1]*scale_factor), int(frame.shape[0]*scale_factor))
+        frame = cv2.resize(frame, dim)
+
+    roi = frame[x1: x2, y1: y2]
     rows, cols, _ = roi.shape
     gray_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     gray_roi = cv2.GaussianBlur(gray_roi, (7, 7), 0)
