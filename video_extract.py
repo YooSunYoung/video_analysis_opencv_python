@@ -4,14 +4,25 @@ import numpy as np
 video_path = "data/short_video.mkv"
 capture = cv2.VideoCapture(video_path)
 
+face_cascade_path = "data/haarcascades/haarcascade_profileface.xml"
+eye_cascade_path = "data/haarcascades/haarcascade_eye.xml"
+eye_cascade = cv2.CascadeClassifier(eye_cascade_path)
+face_cascade = cv2.CascadeClassifier(face_cascade_path)
+if eye_cascade.empty():
+    print("Can't load eyes cascade")
+    exit()
+if face_cascade.empty():
+    print("Can't load face cascade")
+    exit()
+
 num_test = 0
 while True:
     num_test += 1
-    if num_test > 200: break
+    if num_test > 20: break
     ret, frame = capture.read()
     if ret is False:
         break
-    roi = frame[500: 1500, 800: 1600]
+    roi = frame[800: 1200, 1000: 1600]
     rows, cols, _ = roi.shape
     gray_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     gray_roi = cv2.GaussianBlur(gray_roi, (7, 7), 0)
