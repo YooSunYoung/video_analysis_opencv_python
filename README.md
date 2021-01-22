@@ -9,7 +9,7 @@ ref: [How to use OpenCV docker image](https://learnopencv.com/install-opencv-doc
 
 You might need to download haar cascade xml files from opencv github repository: [https://github.com/opencv/opencv/tree/master/data/haarcascades](https://github.com/opencv/opencv/tree/master/data/haarcascades).
 
-Default directory of the xml files is `data/haarcascades/`.
+Default path to the xml files is `data/haarcascades/*.xml`.
 
 Otherwise, you need to change the xml file path. 
 
