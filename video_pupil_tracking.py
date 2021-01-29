@@ -1,6 +1,7 @@
 import cv2
 import json
 import math
+import csv
 import numpy as np
 import tensorflow as tf
 from blink_detection import simple_model
@@ -164,6 +165,8 @@ def find_pupils(eye_zones, image, contour_threshold, blob_detector, minimum_area
 video_writer = cv2.VideoWriter_fourcc(*'XVID')
 video_output = cv2.VideoWriter('output.avi', video_writer, 5, (2200, 1500))
 
+f = open("result.csv", 'w')
+result_csv = csv.writer(f)
 
 for frame_range in frame_ranges:
     capture.set(1, frame_range[0])
@@ -188,15 +191,22 @@ for frame_range in frame_ranges:
             cv2.putText(frame, "Eyes Closed", (50, 50), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
 
         #if 0 not in eyes_closed and len(eye_zones) > 0:
+        result_row = [frame_number]
         if not (0 in eyes_closed) and len(eye_zones) > 1:
         # if len(eye_zones) > 1:
             # find pupils
             pupils, eyes = find_pupils(eye_zones, frame, contour_threshold, blob_detector, minimum_area=100)
             # draw eyes and pupils
-            for (x1, y1, x2, y2), (img, x, y, r) in zip(eye_zones, pupils):
+            tmp = []
+            if len(pupils) == 0:
+                tmp.append(None)
+            for (x1, y1, x2, y2), (img, x, y, r) in zip(eye_zones[:1], pupils[:1]):
                 if r < 20:
                     cv2.putText(frame, "Can't find pupil", (150, 150), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
+                    tmp = [None]
                     break
+                tmp.append(x)
+                tmp.append(y)
                 frame = cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 # frame = cv2.circle(frame, (x, y), r, (0, 0, 255))
                 frame = cv2.circle(frame, (x, y), 0, (0, 0, 255), thickness=5)
@@ -204,7 +214,10 @@ for frame_range in frame_ranges:
             eyes = cv2.copyMakeBorder(eyes, 0, 0, 0, width-eyes.shape[1], cv2.BORDER_CONSTANT)
             frame = cv2.copyMakeBorder(frame, 0, 0, 0, width-frame.shape[1], cv2.BORDER_CONSTANT)
             frame = np.concatenate((frame, eyes), axis=0)
-
+            for i in tmp:
+                result_row.append(i)
+        else:
+            result_row.append('None')
         frame = cv2.copyMakeBorder(frame, 0, 1500-frame.shape[0], 0, 2200-frame.shape[1], cv2.BORDER_CONSTANT)
         if visualize_result:
         #    cv2.imshow("Original", frame)
@@ -212,7 +225,9 @@ for frame_range in frame_ranges:
         # key = cv2.waitKey(20)
         # if key == 27:
         #   break
+        result_csv.writerow(result_row)
 
+f.close()
 capture.release()
 video_output.release()
 cv2.destroyAllWindows()
