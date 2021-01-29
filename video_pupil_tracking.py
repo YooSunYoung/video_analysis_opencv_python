@@ -200,7 +200,7 @@ for frame_range in frame_ranges:
             tmp = []
             if len(pupils) == 0:
                 tmp.append(None)
-            for (x1, y1, x2, y2), (img, x, y, r) in zip(eye_zones[:1], pupils[:1]):
+            for (x1, y1, x2, y2), (img, x, y, r) in zip(eye_zones[:2], pupils[:2]):
                 if r < 20:
                     cv2.putText(frame, "Can't find pupil", (150, 150), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
                     tmp = [None]
