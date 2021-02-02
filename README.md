@@ -10,6 +10,23 @@ If docker can't connect to the display, try
 xhost +local:docker
 ```
 
+## Eyes Closed or Open Classification
+
+`blink_detection.py` has scripts for binary classification training model which detect if the eyes are open or closed.
+The link to the data used for the training is in the reference, `pupil annotation dataset`.
+Also, I uploaded the trained weight in `data/` directory.
+
+## Pupil Tracking
+
+There are 3 steps to find the center point of the pupil.
+#### 1. Detect Eyes
+This is done with opencv cascade eyes detector
+#### 2. Determine if Eyes are closed or open 
+#### 3. Find Pupils on the Eyes.
+The center point of the pupil is obtained from the fragment images of eyes.
+The real center point is then calculated regarding the point of the eyes from the original image. 
+  
+
 ## Haarcascades Files
 
 You might need to download haar cascade xml files from opencv github repository: [https://github.com/opencv/opencv/tree/master/data/haarcascades](https://github.com/opencv/opencv/tree/master/data/haarcascades).
