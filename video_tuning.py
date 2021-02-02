@@ -54,8 +54,9 @@ def generate_metadata(video_path, **kwargs):
 
 
 if __name__ == "__main__":
-    video_path = "data/short_video.mkv"
+    # video_path = "data/short_video.mkv"
+    video_path = "/home/syo/Downloads/2020-06-29_11-12-37.933427/2020-06-29_11-12-37.933427/camera/recoded.mkv"
     metadata_path = video_path.replace("mkv", "json")
     metadata = generate_metadata(video_path)
-    metadata_file = open(metadata_path, 'w')
+    metadata_file = open(metadata_path, 'w+')
     json.dump(metadata, metadata_file)
