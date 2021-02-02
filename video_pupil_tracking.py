@@ -46,7 +46,7 @@ scale_factor = 0.5
 frame_ranges = [range(0, 150)]
 
 X = tf.placeholder(tf.float32, [None, 50, 50, 1], name="normalized_gray_image")
-checkpoint_path = 'data/model-60'
+checkpoint_path = 'data/model'
 output_0 = simple_model(X, training=False)
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
