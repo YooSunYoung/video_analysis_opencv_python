@@ -1,11 +1,32 @@
 # Video Analysis
 
 ## Environment Settings
-This project needs docker image which has OpenCV.
+This project needs docker image which has OpenCV and tensorflow.
 
 ref: [How to use OpenCV docker image](https://learnopencv.com/install-opencv-docker-image-ubuntu-macos-windows/)
 
-If docker can't connect to the display, try
+Docker image for this repository can be found on the docker hub : 
+
+> [https://hub.docker.com/r/yoosunyoung/opencv_tensorflow](https://hub.docker.com/r/yoosunyoung/opencv_tensorflow)
+
+`docker pull yoosunyoung/opencv_tensorflow:latest`
+
+you can run the container with the command below.
+```
+docker run
+-p 5000:5000 -p 8888:8888
+-v /tmp/.X11-unix:/tmp/.X11-unix
+-v {PATH_TO_THIS_REPOSITORY}:/root/video-extract
+--env DISPLAY=$DISPLAY
+--name opencv_tensorflow_2
+yoosunyoung/opencv_tensorflow:tensorflow2 /bin/bash
+```
+
++ Image for tensorflow 1 is also available.
+
+`docker pull yoosunyoung/opencv_tensorflow:tensorflow1` 
+
++ If docker can't connect to the display, try
 ```
 xhost +local:docker
 ```
@@ -40,3 +61,4 @@ Otherwise, you need to change the xml file path.
 - Face and eye detection: [https://www.hackster.io/trivediswap25/face-and-eye-detection-in-python-using-opencv-5a5b10](https://www.hackster.io/trivediswap25/face-and-eye-detection-in-python-using-opencv-5a5b10)
 - Brightness and contrast correction: [https://docs.opencv.org/3.4/d3/dc1/tutorial_basic_linear_transform.html](https://docs.opencv.org/3.4/d3/dc1/tutorial_basic_linear_transform.html)
 - Pupil Annotation Dataset: [http://mrl.cs.vsb.cz/eyedataset](http://mrl.cs.vsb.cz/eyedataset)
+- Binary Classification Tutorial: [https://github.com/MuhammedBuyukkinaci/TensorFlow-Binary-Image-Classification-using-CNN-s/blob/master/Binary_classification.ipynb](https://github.com/MuhammedBuyukkinaci/TensorFlow-Binary-Image-Classification-using-CNN-s/blob/master/Binary_classification.ipynb)
