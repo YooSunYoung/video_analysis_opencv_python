@@ -19,6 +19,7 @@ docker run
 -v {PATH_TO_THIS_REPOSITORY}:/root/video-extract
 --env DISPLAY=$DISPLAY
 --name opencv_tensorflow_2
+--ipc host
 yoosunyoung/opencv_tensorflow:tensorflow2 /bin/bash
 ```
 
