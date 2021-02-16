@@ -12,8 +12,10 @@ RUN apt-get install -y \
 RUN apt-get install -y python3-pip
 RUN python3.7 -m pip install futures==2.2.0 \
                 scikit-build \
-                tensorflow-gpu==2.0.0a0 \
-                h5py==2.10.0
+                h5py==2.10.0 \
+                pandas \
+                matplotlib
+RUN python3.7 -m pip install tensorflow-gpu==2.0.0a0
 RUN python3.7 -m pip install opencv-python==3.4.2.17
 RUN apt update && apt install -y libsm6 libxext6
 RUN apt install -y libxrender-dev
