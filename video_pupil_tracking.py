@@ -6,8 +6,8 @@ import numpy as np
 import tensorflow as tf
 from blink_detection import simple_model
 
-metadata_path = "data/short_video.json"
-# metadata_path = "data/sample_video.json"
+metadata_path = "data/videos/short_video.json"
+# metadata_path = "data/videos/sample_video.json"
 with open(metadata_path) as f:
     metadata = json.load(f)
 video_path = metadata['video_path']
@@ -43,16 +43,11 @@ right_eye_x, right_eye_y = 5000, 5000
 
 
 scale_factor = 0.5
-frame_ranges = [range(0, 150)]
+frame_ranges = [range(0, 1500)]
 
-X = tf.placeholder(tf.float32, [None, 50, 50, 1], name="normalized_gray_image")
-checkpoint_path = 'data/model'
-output_0 = simple_model(X, training=False)
-init = tf.global_variables_initializer()
-saver = tf.train.Saver()
-sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
-sess.run(init)
-saver.restore(sess, checkpoint_path)
+checkpoint_path = './data/model'
+model = simple_model()
+model.load_weights(checkpoint_path)
 
 tmp_eye_zones = [[0, 0, 3000, 3000], [0, 0, 3000, 3000]]
 
@@ -80,25 +75,31 @@ def find_eyes_from_image(image, eye_detector):
         x1 = eye[0]
         x2 = eye[0]+eye[2]
         y1 = eye[1]
+        if y1 > image.shape[0]*0.5: continue
         y2 = eye[1]+eye[3]
         eye_zones.append(tuple([x1, y1, x2, y2]))
     return eye_zones
 
 
-def closed_or_open(eye_zones, image,  sess, output_0):
+def closed_or_open(eye_zones, image, model):
     gray_eye_zones = []
     for x1, y1, x2, y2 in eye_zones:
         eye_img = image[y1:y2, x1:x2].copy()
         eye_img = eye_img[int(eye_img.shape[1]/3):eye_img.shape[1], 0:eye_img.shape[0]]
+        eye_img = cv2.flip(eye_img, 1)
         gray_eye_zone = cv2.cvtColor(eye_img, cv2.COLOR_BGR2GRAY)
         gray_eye_zone = cv2.GaussianBlur(gray_eye_zone, (7, 7), 0)
         gray_eye_zone = cv2.resize(gray_eye_zone, (50, 50), interpolation=cv2.INTER_AREA)
         gray_eye_zone = np.reshape(gray_eye_zone, (50, 50, 1))
+        gray_eye_zone = gray_eye_zone + gray_eye_zone*0.4
         gray_eye_zone = gray_eye_zone / 225
         gray_eye_zones.append(gray_eye_zone)
-    eyes_closed = sess.run(output_0, feed_dict={X: gray_eye_zones})
+    eyes_closed = model.predict([gray_eye_zones])
     for il, eye_label in enumerate(eyes_closed):
-        eye_label = 0 if eye_label < 0.5 else 1
+        #print(eye_label)
+        #cv2.imshow('test', gray_eye_zones[il])
+        #cv2.waitKey(200)
+        eye_label = 0 if eye_label < 0.8 else 1
         eyes_closed[il] = eye_label
     return eyes_closed
 
@@ -162,18 +163,24 @@ def find_pupils(eye_zones, image, contour_threshold, blob_detector, minimum_area
     return pupils
 
 
-video_writer = cv2.VideoWriter_fourcc(*'XVID')
-video_output = cv2.VideoWriter('output.avi', video_writer, 5, (2200, 1500))
+video_writer = cv2.VideoWriter_fourcc(*'MJPG')
+video_output = cv2.VideoWriter('result/output_0.avi', video_writer, 5, (2200, 1500))
 
-f = open("result.csv", 'w')
+f = open("result/result.csv", 'w')
 result_csv = csv.writer(f)
-
+result_csv.writerow(['frame_num',
+                     'left_eye_x', 'left_eye_y', 'left_eye_r',
+                     'right_eye_x', 'right_eye_y', 'right_eye_r'])
 for frame_range in frame_ranges:
     capture.set(1, frame_range[0])
     for frame_number in frame_range:
         ret, frame = capture.read()
         if ret is False:
             print("Failed to open the video")
+            f.close()
+            capture.release()
+            video_output.release()
+            cv2.destroyAllWindows()
             exit(FileNotFoundError)
         # Video Size Adjustment
         frame = adjust_image_size(frame, scale_factor)
@@ -184,29 +191,28 @@ for frame_range in frame_ranges:
         # find eyes
         eye_zones = find_eyes_from_image(frame, eye_cascade)
         # see if eyes are closed
-        if len(eye_zones) > 1:
+        if eye_zones is not None and len(eye_zones) > 1:
             tmp_eye_zones = eye_zones  # if eyes were not found, assume eyes are still at the same place.
-        eyes_closed = closed_or_open(tmp_eye_zones, frame, sess, output_0)
-        if 0 in eyes_closed or len(eye_zones) < 2:
-            cv2.putText(frame, "Eyes Closed", (50, 50), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
-
-        #if 0 not in eyes_closed and len(eye_zones) > 0:
+        eyes_closed = closed_or_open(tmp_eye_zones, frame, model)
+        #if 0 in eyes_closed or len(eye_zones) < 2:
+        for ir, result in enumerate(eyes_closed):
+            cv2.putText(frame, str(result), (50*ir, 200), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
         result_row = [frame_number]
-        if not (0 in eyes_closed) and len(eye_zones) > 1:
-        # if len(eye_zones) > 1:
+        if (eye_zones is None or len(eye_zones) < 2) and 0 in eyes_closed:
+            cv2.putText(frame, "Eyes Closed", (50, 50), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
+            # result_row.append('None')
+        else:
             # find pupils
             pupils, eyes = find_pupils(eye_zones, frame, contour_threshold, blob_detector, minimum_area=100)
             # draw eyes and pupils
             tmp = []
-            if len(pupils) == 0:
-                tmp.append(None)
             for (x1, y1, x2, y2), (img, x, y, r) in zip(eye_zones[:2], pupils[:2]):
-                if r < 20:
+                if r < 15:
                     cv2.putText(frame, "Can't find pupil", (150, 150), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
-                    tmp = [None]
                     break
                 tmp.append(x)
                 tmp.append(y)
+                tmp.append(r)
                 frame = cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 # frame = cv2.circle(frame, (x, y), r, (0, 0, 255))
                 frame = cv2.circle(frame, (x, y), 0, (0, 0, 255), thickness=5)
@@ -216,8 +222,7 @@ for frame_range in frame_ranges:
             frame = np.concatenate((frame, eyes), axis=0)
             for i in tmp:
                 result_row.append(i)
-        else:
-            result_row.append('None')
+
         frame = cv2.copyMakeBorder(frame, 0, 1500-frame.shape[0], 0, 2200-frame.shape[1], cv2.BORDER_CONSTANT)
         if visualize_result:
         #    cv2.imshow("Original", frame)
