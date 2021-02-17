@@ -13,18 +13,23 @@ data['left_eye_r'].plot.hist(alpha=0.8)
 data['right_eye_r'].plot.hist(alpha=0.8)
 plt.xlabel('pupil radius')
 plt.legend()
-plt.savefig('pupil_radius.png')
+plt.savefig('result/pupil_radius_histogram.png')
 plt.clf()
 
-data = data.drop(data[data['left_eye_r'] < 32].index)
-data = data.drop(data[data['right_eye_r'] < 32].index)
+#data = data.drop(data[data['left_eye_r'] > 32].index)
+#data = data.drop(data[data['right_eye_r'] > 32].index)
 
-data['left_eye_r'][:150].plot.line(x=data['frame_num'])
-data['right_eye_r'][:150].plot.line(x=data['frame_num'], figsize=(15, 6))
+data['left_eye_r'][:200].plot.line(x=data['frame_num'])
+data['right_eye_r'][:200].plot.line(x=data['frame_num'], figsize=(15, 6))
 
 plt.xlabel('frame number')
 plt.ylabel('pupil radius')
 
-print(data.head())
 plt.legend()
-plt.savefig('pupil_radius_change.png')
+plt.savefig('result/pupil_radius_line.png')
+
+plt.clf()
+
+diff['left_eye_r'][:150].plot.line(x=data['frame_num'])
+plt.legend()
+plt.savefig('result/pupil_radius_change.png')
