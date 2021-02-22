@@ -11,6 +11,10 @@ Docker image for this repository can be found on the docker hub :
 
 `docker pull yoosunyoung/opencv_tensorflow:latest`
 
+or
+
+`docker pull yoosunyoung/opencv_tensorflow:tensorflow2`
+
 you can run the container with the command below.
 ```
 docker run
@@ -55,7 +59,18 @@ You might need to download haar cascade xml files from opencv github repository:
 
 Default path to the xml files is `data/haarcascades/*.xml`.
 
-Otherwise, you need to change the xml file path. 
+Otherwise, you need to change the xml file path.
+
+## Sample Video
+
+You can find the sample video and the metadata file, `sample_video.mkv` and `sample_video.json` in the branch named `sample_video`.
+You can download the video by the commands below.
+Then you can have the files in your `data/video` directory.
+```
+git checkout sample_video
+git pull origin sample_video
+git checkout master
+```
 
 ## References
 - Eye motion tracking: [https://pysource.com/2019/01/04/eye-motion-tracking-opencv-with-python/](https://pysource.com/2019/01/04/eye-motion-tracking-opencv-with-python/)
