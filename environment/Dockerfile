@@ -22,3 +22,12 @@ RUN apt install -y libxrender-dev
 
 RUN echo 'alias python="python3.7"' >> ~/.bashrc
 RUN echo 'alias pip="python3.7 -m pip"' >> ~/.bashrc
+
+RUN apt install -y pkg-config \
+                   libcairo2 \
+                   libcairo2-dev \
+                   python3-gi \
+                   python3-gi-cairo \
+                   gir1.2-gtk-3.0
+
+RUN python3.7 -m pip install pycairo==1.15.0
