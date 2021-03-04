@@ -83,3 +83,31 @@ plt.text(-15, 14, 'movement on y-axis mean: {:.5f}'.format((pd.concat([diff['rig
 plt.xlabel('movement on x-axis', fontdict=axis_label_font_dict)
 plt.ylabel('movement on y-axis', fontdict=axis_label_font_dict)
 plt.savefig('result/both_eyes_movement.png')
+plt.clf()
+
+durations = [[],[],[]]
+lengths = [0, 0, 0]
+for distances in zip(diff['left_distance'], diff['right_distance'], diff['left_distance']+diff['right_distance']):
+    for id, distance in enumerate(distances):
+        if distance == 0: lengths[id] += 1
+        else:
+            if lengths[id] > 0: durations[id].append(lengths[id])
+            lengths[id] = 0
+
+left_eye = pd.DataFrame({'left_eye': durations[0]})
+right_eye = pd.DataFrame({'right_eye':durations[1]})
+both_eyes = pd.DataFrame({'both_eyes':durations[2]})
+ax = left_eye.plot.hist(bins=15)
+right_eye.plot.hist(bins=15, ax=ax)
+both_eyes.plot.hist(bins=15, ax=ax)
+plt.title("How long eyes don't move", fontdict=title_font_dict)
+plt.yscale('log')
+plt.xlabel('duration [frame]', fontdict=axis_label_font_dict)
+plt.ylabel('frequency (log scale)', fontdict=axis_label_font_dict)
+plt.text(18, 900, 'left eye mean: {:.3f} frames'.format(left_eye['left_eye'].mean()))
+plt.text(18, 400, 'right eye mean: {:.3f} frames'.format(right_eye['right_eye'].mean()))
+plt.text(18, 200, 'both eyes mean: {:.3f} frames'.format(both_eyes['both_eyes'].mean()))
+#plt.text(40, 800, 'movement on y-axis mean: {:.5f}'.format(still.mean()))
+plt.legend()
+plt.savefig('result/eyes_frozen_duration.png')
+plt.clf()
