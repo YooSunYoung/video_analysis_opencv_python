@@ -118,7 +118,7 @@ def extract_pupil_from_video(video_path, visualize_result=False,
                              scale_factor=0.5,
                              brightness=2.2,
                              contour_threshold=12,
-                             face_cascade_path="data/haarcascades/haarcascade_profileface.xml",
+                             # face_cascade_path="data/haarcascades/haarcascade_profileface.xml",
                              eye_cascade_path="data/haarcascades/haarcascade_righteye_2splits.xml",
                              blob_detector_param=None,
                              minimum_pupil_radius=15,
@@ -239,9 +239,8 @@ def extract_pupil_from_video(video_path, visualize_result=False,
 
 if __name__ == "__main__":
     arguments = sys.argv
-    # metadata_path = "data/videos/short_video.json"
+    metadata_path = "data/videos/short_video.json"
     # metadata_path = "data/videos/sample_video.json"
-    metadata_path = "data/videos/2020-06-29_11-12-37.933427/camera/recoded.json"
     if len(arguments) > 1:
         metadata_path = arguments[1]
     with open(metadata_path) as f:
@@ -259,6 +258,7 @@ if __name__ == "__main__":
                              contour_threshold=metadata.get('contour_threshold', 20),
                              scale_factor=metadata.get('size_scale_factor', 0.5),
                              minimum_pupil_radius=metadata.get('pupil_minimum_radius', 10),
-                             #frame_ranges=[range(0, 100)],
-                             blob_detector_param=param
+                             # frame_ranges=[range(0, 100)],
+                             blob_detector_param=param,
+                             output_directory='result/0/'
                              )
