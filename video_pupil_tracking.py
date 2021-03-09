@@ -49,7 +49,7 @@ def closed_or_open(eye_zones, image, model):
         gray_eye_zone = gray_eye_zone + gray_eye_zone * 0.4
         gray_eye_zone = gray_eye_zone / 225
         gray_eye_zones.append(gray_eye_zone)
-    eyes_closed = model.predict([gray_eye_zones])
+    eyes_closed = model.predict(tuple([gray_eye_zones]))
     for il, eye_label in enumerate(eyes_closed):
         # print(eye_label)
         # cv2.imshow('test', gray_eye_zones[il])
