@@ -6,6 +6,7 @@ import random
 import logging
 tf.get_logger().setLevel(logging.ERROR)
 
+
 def preprocess(directory_path="data/eye_images/mrlEyes_2018_01"):
     if os.path.exists(directory_path) is False:
         print("Please download and extract the eye images and check if they are in the right path.")

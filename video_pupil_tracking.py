@@ -119,7 +119,7 @@ def extract_pupil_from_video(video_path, visualize_result=False,
                              brightness=2.2,
                              contour_threshold=12,
                              # face_cascade_path="data/haarcascades/haarcascade_profileface.xml",
-                             eye_cascade_path="data/haarcascades/haarcascade_righteye_2splits.xml",
+                             eye_cascade_path="/usr/local/lib/python3.7/dist-packages/cv2/data/haarcascade_righteye_2splits.xml",
                              blob_detector_param=None,
                              minimum_pupil_radius=15,
                              frame_ranges=None,
@@ -127,6 +127,7 @@ def extract_pupil_from_video(video_path, visualize_result=False,
                              checkpoint_path='./data/model',
                              output_directory='result/'):
     capture = cv2.VideoCapture(video_path)
+    print(eye_cascade_path)
     eye_cascade = cv2.CascadeClassifier(eye_cascade_path)
     if eye_cascade.empty():
         print("Can't load eyes cascade")
@@ -161,6 +162,8 @@ def extract_pupil_from_video(video_path, visualize_result=False,
                                        video_writer, 5,
                                        (2200, 1500))
 
+    if not os.path.exists(output_directory):
+        os.mkdir(output_directory)
     f = open(os.path.join(output_directory, 'result.csv'), 'w')
     result_csv = csv.writer(f)
     result_csv.writerow(['frame_num',
@@ -240,6 +243,7 @@ def extract_pupil_from_video(video_path, visualize_result=False,
 if __name__ == "__main__":
     arguments = sys.argv
     metadata_path = "data/videos/short_video.json"
+    haarcasecade_dir = os.path.dirname(cv2.__file__)
     # metadata_path = "data/videos/sample_video.json"
     if len(arguments) > 1:
         metadata_path = arguments[1]
@@ -258,7 +262,8 @@ if __name__ == "__main__":
                              contour_threshold=metadata.get('contour_threshold', 20),
                              scale_factor=metadata.get('size_scale_factor', 0.5),
                              minimum_pupil_radius=metadata.get('pupil_minimum_radius', 10),
-                             # frame_ranges=[range(0, 100)],
+                             frame_ranges=[range(0, 100)],
+                             eye_cascade_path=os.path.join(haarcasecade_dir, "data", "haarcascade_righteye_2splits.xml"),
                              blob_detector_param=param,
-                             output_directory='result/0/'
+                             output_directory='result/test/'
                              )
