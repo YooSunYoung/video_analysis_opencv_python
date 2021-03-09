@@ -124,7 +124,7 @@ def extract_pupil_from_video(video_path, visualize_result=False,
                              minimum_pupil_radius=15,
                              frame_ranges=None,
                              model=None,
-                             checkpoint_path='./data/model',
+                             checkpoint_path='./data/weight_files/model',
                              output_directory='result/'):
     capture = cv2.VideoCapture(video_path)
     print(eye_cascade_path)
