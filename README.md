@@ -64,10 +64,15 @@ Otherwise, you need to change the xml file path.
 ## Sample Video
 
 You can find the sample video and the metadata file, `sample_video.mkv` and `sample_video.json` in the branch named `sample_video`.
+
 You can download the video by the commands below.
+
 Then you can have the files in your `data/video` directory.
+
+After checkout the remote branch, git might have already added the new files, so check this before you push the commits. 
 ```
-git checkout sample_video -- data/videos/sample_video.*
+git checkout {your remote repository}/sample_video -- data/videos/sample_video.*
+git reset
 ```
 Then you can keep these files for master branch and use for your analysis.
 Note that the `sample_video` branch might not be up-to-date.
