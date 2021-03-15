@@ -111,3 +111,12 @@ plt.text(18, 200, 'both eyes mean: {:.3f} frames'.format(both_eyes['both_eyes'].
 plt.legend()
 plt.savefig('result/eyes_frozen_duration.png')
 plt.clf()
+
+plt.title("How long eyes don't move", fontdict=title_font_dict)
+#ax = left_eye[:200].plot.line(figsize=(20, 6))
+#right_eye[:200].plot.line(figsize=(20, 6), ax=ax)
+both_eyes[:500].plot.line(figsize=(15, 5))
+plt.text(0, 8, 'first 500')
+plt.xlabel('', fontdict=axis_label_font_dict)
+plt.ylabel('duration [frame]', fontdict=axis_label_font_dict)
+plt.savefig('result/duration.png')
