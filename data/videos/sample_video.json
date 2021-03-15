@@ -1,6 +1,0 @@
-{"contour_threshold": 55,
-  "video_path": "./data/videos/sample_video.mkv",
-  "contrast": 0,
-  "size_scale_factor": 0.5,
-  "pupil_minimum_radius": 5,
-  "brightness": 0.8}
