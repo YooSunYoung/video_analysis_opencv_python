@@ -1,14 +1,117 @@
-import sys, os
+import csv
 import cv2
 import json
-import csv
 import numpy as np
+import os
+import sys
 from blink_detection import simple_model
-from video_processing_utilities.image_utils import adjust_image_size
-from video_processing_utilities.image_utils import adjust_image_brightness
-from video_processing_utilities.image_utils import find_eyes_from_image
-from video_processing_utilities.image_utils import closed_or_open
-from video_processing_utilities.image_utils import find_pupils
+
+
+def adjust_image_size(image, scale_factor=1):
+    if scale_factor != 1:
+        dim = (int(image.shape[1] * scale_factor), int(image.shape[0] * scale_factor))
+        image = cv2.resize(image, dim)
+    return image
+
+
+def adjust_image_brightness(image, brightness=1):
+    image = cv2.addWeighted(image, 0, image, brightness, 0)
+    return image
+
+
+def find_eyes_from_image(image, eye_detector):
+    eyes = eye_detector.detectMultiScale(image)
+    if len(eyes) == 0:
+        return None
+    eyes = sorted(eyes, key=lambda x: x[2])
+    eyes = sorted(eyes, key=lambda x: x[0])
+    eye_zones = []
+    for eye in eyes:
+        x1 = eye[0]
+        x2 = eye[0] + eye[2]
+        y1 = eye[1]
+        if y1 > image.shape[0] * 0.5: continue
+        y2 = eye[1] + eye[3]
+        eye_zones.append(tuple([x1, y1, x2, y2]))
+    return eye_zones
+
+
+def closed_or_open(eye_zones, image, model):
+    gray_eye_zones = []
+    for x1, y1, x2, y2 in eye_zones:
+        eye_img = image[y1:y2, x1:x2].copy()
+        eye_img = eye_img[int(eye_img.shape[1] / 3):eye_img.shape[1], 0:eye_img.shape[0]]
+        eye_img = cv2.flip(eye_img, 1)
+        gray_eye_zone = cv2.cvtColor(eye_img, cv2.COLOR_BGR2GRAY)
+        gray_eye_zone = cv2.GaussianBlur(gray_eye_zone, (7, 7), 0)
+        gray_eye_zone = cv2.resize(gray_eye_zone, (50, 50), interpolation=cv2.INTER_AREA)
+        gray_eye_zone = np.reshape(gray_eye_zone, (50, 50, 1))
+        gray_eye_zone = gray_eye_zone + gray_eye_zone * 0.4
+        gray_eye_zone = gray_eye_zone / 225
+        gray_eye_zones.append(gray_eye_zone)
+    eyes_closed = model.predict(tuple([gray_eye_zones]))
+    for il, eye_label in enumerate(eyes_closed):
+        # print(eye_label)
+        # cv2.imshow('test', gray_eye_zones[il])
+        # cv2.waitKey(200)
+        eye_label = 0 if eye_label < 0.8 else 1
+        eyes_closed[il] = eye_label
+    return eyes_closed
+
+
+def find_pupil(eye, contour_threshold, blob_detector, minimum_area=20, minimum_radius=10):
+    gray_eye = cv2.cvtColor(eye, cv2.COLOR_BGR2GRAY)
+    gray_eye = cv2.GaussianBlur(gray_eye, (7, 7), 0)
+    _, threshold = cv2.threshold(gray_eye, contour_threshold, 255, cv2.THRESH_BINARY_INV)
+    _, contours, _ = cv2.findContours(threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)
+    if len(contours) == 0 or cv2.contourArea(contours[0]) < minimum_area:
+        return find_pupil(eye, contour_threshold + 2, blob_detector, minimum_area=minimum_area)
+
+    circle_keypoints = blob_detector.detect(threshold)
+    circle_keypoints = sorted(circle_keypoints, key=lambda x: x.size, reverse=True)
+    x, y, r = None, None, None
+    if len(circle_keypoints) > 0:
+        circle_keypoints = [circle_keypoints[0]]
+        x = int(circle_keypoints[0].pt[0])
+        y = int(circle_keypoints[0].pt[1])
+        r = int(circle_keypoints[0].size)
+        if r >= minimum_radius:
+            gray_eye = cv2.drawKeypoints(gray_eye, circle_keypoints, np.array([]), (0, 0, 255),
+                                         cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    if None in [x, y, r] or r < minimum_radius:
+        cnt = contours[0]
+        (x, y), r = cv2.minEnclosingCircle(cnt)
+        x, y = int(x), int(y)
+        r = int(r)
+        if len(gray_eye.shape) < 3:
+            gray_eye = cv2.cvtColor(gray_eye, cv2.COLOR_GRAY2RGB)
+        gray_eye = cv2.circle(gray_eye, (x, y), r, (0, 0, 255))
+    threshold = cv2.cvtColor(threshold, cv2.COLOR_GRAY2RGB)
+    gray_eye = np.concatenate((gray_eye, threshold), axis=1)
+    gray_eye = cv2.circle(gray_eye, (x, y), 0, (0, 0, 255), thickness=2)
+    return gray_eye, [x, y, r]
+
+
+def find_pupils(eye_zones, image, contour_threshold, blob_detector, minimum_area=10, visualize=True, minimum_radius=10):
+    pupils = []
+    for (x1, y1, x2, y2) in eye_zones:
+        eye_img = image[y1:y2, x1:x2].copy()
+        gray_eye, [x, y, r] = find_pupil(eye_img, contour_threshold, blob_detector, minimum_area, minimum_radius)
+        x = x + x1  # real x coordinate on original frame
+        y = y + y1  # real y coordinate on original frame
+        pupils.append([gray_eye, x, y, r])
+    if visualize is True:
+        eyes = pupils[0][0]
+        if len(pupils) > 1:
+            eye1 = pupils[0][0]
+            eye2 = pupils[1][0]
+            width = max(eye1.shape[0], eye2.shape[0])
+            eye1 = cv2.copyMakeBorder(eye1, 0, width - eye1.shape[0], 0, 0, cv2.BORDER_CONSTANT)
+            eye2 = cv2.copyMakeBorder(eye2, 0, width - eye2.shape[0], 0, 0, cv2.BORDER_CONSTANT)
+            eyes = np.concatenate((eye1, eye2), axis=1)
+        return pupils, eyes
+    return pupils
 
 
 def extract_pupil_from_video(video_path, visualize_result=False,
