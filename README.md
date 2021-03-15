@@ -67,7 +67,7 @@ You can find the sample video and the metadata file, `sample_video.mkv` and `sam
 You can download the video by the commands below.
 Then you can have the files in your `data/video` directory.
 ```
-git checkout {remote_repository_name}/sample_video -- data/videos/sample_video.*
+git checkout sample_video -- data/videos/sample_video.*
 ```
 Then you can keep these files for master branch and use for your analysis.
 Note that the `sample_video` branch might not be up-to-date.
