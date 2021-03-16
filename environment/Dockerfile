@@ -24,3 +24,4 @@ RUN echo 'alias python="python3.7"' >> ~/.bashrc
 RUN echo 'alias pip="python3.7 -m pip"' >> ~/.bashrc
 
 RUN python3.7 -m pip install minio
+RUN python3.7 -m pip install git
