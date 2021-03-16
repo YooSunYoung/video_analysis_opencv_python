@@ -27,6 +27,22 @@ def sample_video(input_video, output_video, frame_num=100):
     terminate()
 
 
+def sample_image(input_video, output_image):
+    capture = cv2.VideoCapture(input_video)
+
+    def terminate():
+        capture.release()
+        cv2.destroyAllWindows()
+
+    ret, frame = capture.read()
+    if ret is False:
+        print("Failed to open the video")
+        terminate()
+        exit(FileNotFoundError)
+    cv2.imwrite(output_image, frame)
+    terminate()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="sampling videos")
     parser.add_argument('--input', type=str,
