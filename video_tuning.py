@@ -36,20 +36,25 @@ def generate_metadata(video_path, **kwargs):
 
     brightness = kwargs.get("brightness", 0)
     contrast = kwargs.get("contrast", 0)
+    size_scale_factor = kwargs.get("size_scale_factor", 0.3)
+    pupil_minimum_radius = kwargs.get("pupil_minimum_radius", 15)
+    contour_threshold = kwargs.get("contour_threshold", 12)
+    
     if brightness == 'autotune' and contrast == 'autotune':
         pass
     if brightness == 'autotune':
         pass
     if contrast == 'autotune':
         pass
-    size_scale_factor = kwargs.get("size_scale_factor", 0.3)
-    contour_threshold = kwargs.get("contour_threshold", 10)
+    if pupil_minimum_radius == 'autotune':
+        pass
     if contour_threshold == 'autotune':
         pass
     metadata = {'video_path': video_path,
                 'brightness': brightness,
                 'contrast': contrast,
                 'size_scale_factor': size_scale_factor,
+                'pupil_minimum_radius': pupil_minimum_radius,
                 'contour_threshold': contour_threshold}
     return metadata
 
@@ -58,7 +63,7 @@ if __name__ == "__main__":
     arguments = sys.argv
     if len(arguments) > 1:
         video_path = arguments[1]
-    metadata_path = video_path.replace("mkv", "json")
+    metadata_path = "data/videos/test.json"
     metadata = generate_metadata(video_path)
     metadata_file = open(metadata_path, 'w+')
     json.dump(metadata, metadata_file)
