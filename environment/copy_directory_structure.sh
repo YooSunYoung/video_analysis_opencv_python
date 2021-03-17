@@ -100,10 +100,10 @@ if [ $SAMPLE_VIDEOS ]; then
     fi
     for VIDEO in ${array[@]}
     do
-        eval `python ${GIT_ROOT_DIR}/video_processing_utilities/sample_video.py \
+        python ${GIT_ROOT_DIR}/video_processing_utilities/sample_video.py \
             --input ${TARGET_DIR}/${VIDEO} \
             --output ${DESTINATION_DIR}/${VIDEO} \
-            --frame_num ${NUM_FRAME}`
+            --frame_num ${NUM_FRAME}
     done
     cd ${TEMP_DIR}
 fi
