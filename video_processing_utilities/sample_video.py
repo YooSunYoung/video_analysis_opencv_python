@@ -8,7 +8,15 @@ def sample_video(input_video, output_video, frame_num=100):
     video_width = int(capture.get(3))
     video_height = int(capture.get(4))
 
-    video_writer = cv2.VideoWriter_fourcc(*'MJPG')
+    extension = output_video.split('.')[-1]
+    codec = "MJPG"
+    if extension=='h264':
+        output_video = output_video.split('.')
+        output_video[-1] = 'mkv'
+        output_video = '.'.join(output_video)
+        print('h264 not supported, changed output video path as {}'.format(output_video))
+
+    video_writer = cv2.VideoWriter_fourcc(*codec)
     video = cv2.VideoWriter(output_video, video_writer, 5, (video_width, video_height))
 
     def terminate():
