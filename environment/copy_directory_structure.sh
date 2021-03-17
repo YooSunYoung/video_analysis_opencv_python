@@ -2,7 +2,8 @@
 
 function usage()
 {
-    echo "--target 'path_to_the_directory': target directory you want to copy from"
+    echo "--input 'path_to_the_directory': the directory you want to copy from"
+    echo "--output 'path_to_the_output_directory': destination of the copied directory. default $(git rev-parse --show-toplevel)/data/"
     echo "--structure_only: if you only want to copy the structure without files "
     echo "--copy_files: if you want to copy files into the directory"
     echo "--sample_videos: if you want to copy small fraction of videos, default 100 frames"
@@ -15,11 +16,19 @@ while [ "$1" != "" ]; do
             usage
             exit
             ;;
-        --target)
-            if [ -d $TARGET_DIR ]; then
-                TARGET_DIR=$2
-            else
+        --input)
+            TARGET_DIR=$2
+            if ! [ -d $TARGET_DIR ]; then
                 echo "$TARGET_DIR doesn't exist"
+                usage
+                exit
+            fi
+            shift
+            ;;
+        --output)
+            OUTPUT_DIR=$2
+            if ! [ -d $OUTPUT_DIR ]; then
+                echo "$OUTPUT_DIR doesn't exist"
                 usage
                 exit
             fi
@@ -48,7 +57,7 @@ while [ "$1" != "" ]; do
 done
 
 if [ -z $TARGET_DIR ]; then
-    echo "option --target missing."
+    echo "option --input missing."
     usage
     exit
 fi
@@ -58,7 +67,12 @@ LEAF_DIR=($(echo $TARGET_DIR | tr "/" "\n"))
 LEN_LEAF_DIR=${#LEAF_DIR[@]}
 LEAF_DIR=${LEAF_DIR[LEN_LEAF_DIR-1]}
 TEMP_DIR=$(pwd)
-DESTINATION_DIR=${GIT_ROOT_DIR}/data/${LEAF_DIR}
+
+if [ -z $OUTPUT_DIR ]; then
+    DESTINATION_DIR=${GIT_ROOT_DIR}/data/${LEAF_DIR}
+else
+    DESTINATION_DIR=${OUTPUT_DIR}/${LEAF_DIR}
+fi
 
 # Copy Directory Structure
 cd $TARGET_DIR 
