@@ -98,12 +98,17 @@ if [ $SAMPLE_VIDEOS ]; then
     if [ -z $NUM_FRAME ]; then
         NUM_FRAME=100
     fi
+    i=1
     for VIDEO in ${array[@]}
     do
+        echo "\n"
+        echo "Sample ${TARGET_DIR}/${VIDEO} into ${DESTINATION_DIR}/${VIDEO}"
+        echo "${i}-th file among ${LEN_FILES} files"
         python ${GIT_ROOT_DIR}/video_processing_utilities/sample_video.py \
             --input ${TARGET_DIR}/${VIDEO} \
             --output ${DESTINATION_DIR}/${VIDEO} \
             --frame_num ${NUM_FRAME}
+        i=$((i+1))
     done
     cd ${TEMP_DIR}
 fi
